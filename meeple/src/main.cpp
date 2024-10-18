@@ -1,7 +1,11 @@
 #include <Arduino.h>
 
 #define PIN_LED 3
-#define PIN_HALL_SENSOR 5
+#define PIN_HALL_SENSOR 2
+
+#define LOOP_DELAY 100
+
+bool read_hall_sensor(void);
 
 void setup()
 {
@@ -12,11 +16,12 @@ void setup()
 
 void loop()
 {
-  digitalWrite(PIN_LED, HIGH);
-  delay(1000);
+  digitalWrite(PIN_LED, read_hall_sensor());
 
-  Serial.write("Lights out!");
+  delay(LOOP_DELAY);
+}
 
-  digitalWrite(PIN_LED, LOW);
-  delay(1000);
+bool read_hall_sensor(void)
+{
+  return digitalRead(PIN_HALL_SENSOR) == LOW;
 }

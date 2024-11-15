@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "wifisetup.h": "c",
+        "esp8266webserver.h": "c"
+    }
+}

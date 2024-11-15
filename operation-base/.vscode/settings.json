@@ -1,0 +1,16 @@
+{
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#2D3007",
+        "titleBar.activeBackground": "#3F430A",
+        "titleBar.activeForeground": "#FAFBE6"
+    },
+    "files.associations": {
+        "[Jj]enkinsfile*": "jenkinsfile",
+        "gpio.h": "c",
+        "uart.h": "c",
+        "cstdint": "cpp",
+        "freertos.h": "c",
+        "hd44780.h": "c",
+        "string_view": "cpp"
+    }
+}

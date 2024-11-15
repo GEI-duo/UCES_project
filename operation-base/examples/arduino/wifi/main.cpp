@@ -1,7 +1,7 @@
 #include <WiFi.h>
 
-const char* ssid = "Redmi Note 11S";  // Replace with your WiFi SSID
-const char* password = "0123456789";  // Replace with your WiFi password
+const char* ssid = "MIWIFI_2G_aYUz";   // Replace with your WiFi SSID
+const char* password = "0123456789j";  // Replace with your WiFi password
 
 void setup() {
   // Start the Serial Monitor

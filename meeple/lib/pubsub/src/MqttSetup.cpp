@@ -1,39 +1,41 @@
 #include "MqttSetup.h"
 
-void _callback(char *topic, byte *payload, unsigned int length)
+void _subscribe(PubSubClient &client, const char *username)
 {
-    Serial.print("Message arrived [");
-    Serial.print(topic);
-    Serial.print("] ");
-    for (unsigned int i = 0; i < length; i++)
+    const std::string topics[] = {
+        "state/stage",
+        "players/" + std::string(username) + "/state/+"};
+
+    for (const auto &topic : topics)
     {
-        Serial.print((char)payload[i]);
+        Serial.printf("Subscribing to %s ... ", topic.c_str());
+        if (client.subscribe(topic.c_str()))
+        {
+            Serial.println("OK");
+        }
+        else
+        {
+            Serial.println("ERROR");
+        }
     }
-    Serial.println();
 }
 
-void _subscribe(PubSubClient &client)
-{
-    client.subscribe("hello-world/");
-}
-
-void init_mqtt_client(PubSubClient &mqtt_client, const char *mqtt_server_host, int mqtt_server_port)
+void init_mqtt_client(PubSubClient &mqtt_client, const char *mqtt_server_host, int mqtt_server_port, Callbacks &callbacks)
 {
     mqtt_client.setServer(mqtt_server_host, mqtt_server_port);
-    mqtt_client.setCallback(_callback);
-    _subscribe(mqtt_client);
+    mqtt_client.setCallback([&callbacks](char *topic, uint8_t *payload, unsigned int length)
+                            { callbacks.callback(topic, payload, length); });
 }
 
-void reconnect(PubSubClient &client, const char *username, const char *password, int reconnect_delay)
+void reconnect(PubSubClient &client, const char *username, const char *password, int reconnect_delay, Callbacks &callbacks)
 {
     while (!client.connected())
     {
         Serial.print("Attempting MQTT connection...");
         // Attempt to connect, just a name to identify the client
-        if (client.connect("MEEPLE-JC", username, password))
+        if (client.connect(username, username, password))
         {
             Serial.println("OK");
-            _subscribe(client);
         }
         else
         {
@@ -43,4 +45,5 @@ void reconnect(PubSubClient &client, const char *username, const char *password,
             delay(reconnect_delay);
         }
     }
+    _subscribe(client, callbacks.player().username());
 }

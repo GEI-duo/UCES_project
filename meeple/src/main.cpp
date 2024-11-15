@@ -1,29 +1,14 @@
-#include <ESP8266WiFi.h>
-#include <Arduino.h>
-#include <PubSubClient.h>
-
-#include "WifiSetup.h"
-#include "MqttSetup.h"
-
-#define PIN_HALL_SENSOR 2
-#define PIN_FEEDBACK_MAGNETIC_LED 3
-#define PIN_FEEDBACK_BULLET_LED 0
-
-#define LOOP_DELAY 100
-#define WIFI_RECONNECT_DELAY_MS 5000
+#include "main.h"
 
 bool read_hall_sensor(void);
 
-const char *SSID = "POCO X5 Pro 5G";
-const char *PASSWORD = "arieteariete";
-const char *MQTT_HOST = "192.168.104.101";
-// const char *MQTT_HOST = "test.mosquitto.org";
-const int MQTT_PORT = 1883;
-const char *MQTT_USERNAME = "duo_jc";
-const char *MQTT_PASSWORD = "VNbxst6n";
+void write_feedback(void);
+void read_feedback(void);
 
 WiFiClient wifi_client;
 PubSubClient mqtt_client(wifi_client);
+Player player(MQTT_USERNAME, mqtt_client);
+Callbacks cb(player);
 
 void setup()
 {
@@ -33,18 +18,21 @@ void setup()
   pinMode(PIN_HALL_SENSOR, INPUT);
 
   connect_wifi(SSID, PASSWORD, WIFI_RECONNECT_DELAY_MS);
-  init_mqtt_client(mqtt_client, MQTT_HOST, MQTT_PORT);
+  init_mqtt_client(mqtt_client, MQTT_HOST, MQTT_PORT, cb);
 }
 
 void loop()
 {
   while (!mqtt_client.connected())
   {
-    reconnect(mqtt_client, MQTT_USERNAME, MQTT_PASSWORD, 5000);
+    reconnect(mqtt_client, MQTT_USERNAME, MQTT_PASSWORD, 5000, cb);
+
+    // Publish ready message
+    player.publish_ready();
   }
 
-  digitalWrite(PIN_FEEDBACK_MAGNETIC_LED, read_hall_sensor());
-  digitalWrite(PIN_FEEDBACK_BULLET_LED, HIGH);
+  read_feedback();
+  write_feedback();
 
   mqtt_client.loop();
 
@@ -54,4 +42,14 @@ void loop()
 bool read_hall_sensor(void)
 {
   return digitalRead(PIN_HALL_SENSOR) == LOW;
+}
+
+void read_feedback(void)
+{
+}
+
+void write_feedback(void)
+{
+  digitalWrite(PIN_FEEDBACK_MAGNETIC_LED, read_hall_sensor());
+  digitalWrite(PIN_FEEDBACK_BULLET_LED, HIGH);
 }

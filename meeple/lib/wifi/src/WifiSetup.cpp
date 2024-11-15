@@ -7,7 +7,7 @@ const char *wifi_ssid, *wifi_password;
 
 bool _connect(const char *ssid, const char *password)
 {
-    Serial.printf("Connecting to %s ... ", ssid);
+    Serial.printf("Connecting to %s with password %s ... ", ssid, password);
     WiFi.begin(ssid, password);
 
     if (WiFi.waitForConnectResult() == WL_CONNECTED)

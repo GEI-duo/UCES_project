@@ -27,7 +27,7 @@ void init_mqtt_client(PubSubClient &mqtt_client, const char *mqtt_server_host, i
                             { callbacks.callback(topic, payload, length); });
 }
 
-void reconnect(PubSubClient &client, const char *username, const char *password, int reconnect_delay, Callbacks &callbacks)
+void connect(PubSubClient &client, const char *username, const char *password, int reconnect_delay, Callbacks &callbacks)
 {
     while (!client.connected())
     {

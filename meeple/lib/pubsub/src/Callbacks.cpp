@@ -3,21 +3,25 @@
 void Callbacks::has_bullet(byte *payload, unsigned int length)
 {
     this->player().set_has_bullet(payload[0]);
+    Serial.printf("Has bullet: %d\n", this->player().has_bullet());
 }
 
 void Callbacks::has_won(byte *payload, unsigned int length)
 {
     this->player().set_has_won(payload[0]);
+    Serial.printf("Has won: %d\n", this->player().has_won());
 }
 
 void Callbacks::can_move(byte *payload, unsigned int length)
 {
     this->player().set_can_move(payload[0]);
+    Serial.printf("Can move: %d\n", this->player().can_move());
 }
 
 void Callbacks::has_died(byte *payload, unsigned int length)
 {
     this->player().set_has_died(payload[0]);
+    Serial.printf("Has died: %d\n", this->player().has_died());
 }
 
 void Callbacks::callback(char *topic, uint8_t *payload, unsigned int length)
@@ -33,24 +37,31 @@ void Callbacks::callback(char *topic, uint8_t *payload, unsigned int length)
 
     if (strcmp(topic, "state/stage") == 0)
     {
-        GameState state = (GameState)payload[0];
+        char name[length + 1];
+        memcpy(name, payload, length);
+        name[length] = '\0';
+
+        GameState state = gamestate_from_name(name);
         switch (state)
         {
         case JOINING:
-            Serial.println("Joining");
+            Serial.println("[DEBUG] New state! JOINING");
             this->m_player.state = JOINING;
             break;
         case WALKING:
-            Serial.println("Walking");
+            Serial.println("[DEBUG] New state! WALKING");
             this->m_player.state = WALKING;
             break;
         case SHOOTING:
-            Serial.println("Shooting");
+            Serial.println("[DEBUG] New state! SHOOTING");
             this->m_player.state = SHOOTING;
             break;
         case ENDING:
-            Serial.println("Ending");
+            Serial.println("[DEBUG] New state! ENDING");
             this->m_player.state = ENDING;
+            break;
+        default:
+            Serial.printf("[ERROR] UNKNOWN NEW STATE %s\n", state);
             break;
         }
         return;

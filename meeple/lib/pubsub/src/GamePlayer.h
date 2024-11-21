@@ -8,8 +8,30 @@ typedef enum game_state
     JOINING,
     WALKING,
     SHOOTING,
-    ENDING
+    ENDING,
+    UNKNOWN
 } GameState;
+
+GameState gamestate_from_name(char *name)
+{
+    if (strcmp(name, "JOINING") == 0)
+    {
+        return JOINING;
+    }
+    else if (strcmp(name, "WALKING") == 0)
+    {
+        return WALKING;
+    }
+    else if (strcmp(name, "SHOOTING") == 0)
+    {
+        return SHOOTING;
+    }
+    else if (strcmp(name, "ENDING") == 0)
+    {
+        return ENDING;
+    }
+    return UNKNOWN;
+}
 
 class Player
 {
@@ -48,22 +70,34 @@ public:
         publish(topic, "1");
     }
 
-    bool can_move() const
+    void publish_moved(void) const
+    {
+        std::string topic = std::string("players/") + m_username + "/actions/moved";
+        publish(topic, "1");
+    }
+
+    void publish_died(void) const
+    {
+        std::string topic = std::string("players/") + m_username + "/actions/died";
+        publish(topic, "1");
+    }
+
+    bool can_move()
     {
         return m_can_move;
     }
 
-    bool has_bullet() const
+    bool has_bullet()
     {
         return m_has_bullet;
     }
 
-    bool has_won() const
+    bool has_won()
     {
         return m_has_won;
     }
 
-    bool has_died() const
+    bool has_died()
     {
         return m_has_died;
     }

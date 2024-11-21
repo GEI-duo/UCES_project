@@ -13,13 +13,13 @@
 #define PIN_FEEDBACK_MAGNETIC_LED 3
 #define PIN_FEEDBACK_BULLET_LED 0
 
-#define LOOP_DELAY 100
-#define WIFI_RECONNECT_DELAY_MS 5000
+#define LOOP_DELAY 0
+#define WIFI_RECONNECT_DELAY_MS 1000
 
 const char *SSID = "spinel";
 const char *PASSWORD = "arieteariete";
 
-const char *MQTT_HOST = "192.168.104.101";
+const char *MQTT_HOST = "192.168.13.101";
 // const char *MQTT_HOST = "test.mosquitto.org";
 const int MQTT_PORT = 1883;
 const char *MQTT_USERNAME = "duo_jc";

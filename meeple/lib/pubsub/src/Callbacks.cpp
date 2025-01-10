@@ -2,13 +2,13 @@
 
 void Callbacks::has_bullet(byte *payload, unsigned int length)
 {
-    this->player().set_has_bullet(payload[0]);
+    this->player().set_has_bullet(strncmp((char *)payload, "True", 4) == 0);
     Serial.printf("Has bullet: %d\n", this->player().has_bullet());
 }
 
 void Callbacks::has_won(byte *payload, unsigned int length)
 {
-    this->player().set_has_won(payload[0]);
+    this->player().set_has_won(strncmp((char *)payload, "True", 4) == 0);
     if (this->player().has_won())
     {
         this->player().set_can_move(false);
@@ -20,7 +20,7 @@ void Callbacks::has_won(byte *payload, unsigned int length)
 
 void Callbacks::can_move(byte *payload, unsigned int length)
 {
-    this->player().set_can_move(payload[0]);
+    this->player().set_can_move(strncmp((char *)payload, "True", 4) == 0);
     if (this->player().can_move())
     {
         this->player().set_has_bullet(false);
@@ -32,7 +32,7 @@ void Callbacks::can_move(byte *payload, unsigned int length)
 
 void Callbacks::has_died(byte *payload, unsigned int length)
 {
-    this->player().set_has_died(payload[0]);
+    this->player().set_has_died(strncmp((char *)payload, "True", 4) == 0);
     if (this->player().has_died())
     {
         this->player().set_can_move(false);

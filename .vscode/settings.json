@@ -50,5 +50,6 @@
   "latex-workshop.message.latexlog.exclude": [
     "glossaries",
     "Underfull"
-  ]
+  ],
+  "cSpell.enabled": true
 }

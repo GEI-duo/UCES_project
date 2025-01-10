@@ -4,6 +4,16 @@
 
 \section{Conclusions}
 
+The game we developed is functional, but it currently does not account for certain unpredictable player behaviors, such as publishing to topics at inappropriate times.
+
+Developing with microcontrollers is undoubtedly challenging, yet we successfully created an engaging and enjoyable game that integrates all the essential components of an embedded system. Additionally, we achieved interconnectivity among multiple devices through networking, unlocking numerous possibilities for future projects. For instance, the network capabilities could be leveraged to input user data via a captive portal rather than hardcoding network credentials into the source code. Another potential enhancement could be implementing Over-The-Air (OTA) updates, allowing remote updates to the devices' firmware.
+
+A significant challenge we faced was establishing a robust communication standard, including a well-defined contract and MQTT topic structure, to ensure seamless interaction between devices. This standardization enabled different teams to work independently while ensuring all components integrated cohesively. Achieving this required a clear understanding of the project requirements and the components involved.
+
+One obstacle that slowed our progress was the time required for compiling and uploading code to the microcontrollers, particularly with the ESP-01, which requires flashing via a USB-to-Serial adapter. Using a development-friendly board with a micro-USB interface could have expedited our iteration process. Once the code reached a more stable state, we could then transition to the ESP-01 for deployment.
+
+Overall, this project provided valuable insights into the complexities of embedded systems and offered a foundation for exciting future developments.
+
 
 \end{document}
 

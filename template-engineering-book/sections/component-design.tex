@@ -65,7 +65,7 @@ I developed the meeple and the game controller in parallel, which allowed me to 
 
 The MQTT broker is a critical component of the game, enabling seamless communication between all other components. It operates as a Docker container running the Mosquitto MQTT broker.
 
-Developing the MQTT broker required approximately 4 hours and was completed solely by Christian. The most challenging aspect was implementing authentication for the broker. The team also encountered an issue where GitHub altered the line endings in configuration files from CRLF to LF, which caused unexpected failures in the broker's functionality.
+Developing the MQTT broker required approximately 4 hours and was completed solely by Christian. The most challenging aspect was implementing authentication for the broker. The team also encountered an issue where GitHub altered the line endings in configuration files from LF to CRLF, which caused unexpected failures in the broker's functionality.
 
 Ultimately, Jordi deployed the broker to the cloud, allowing the team to test the game remotely without needing to meet in person
 

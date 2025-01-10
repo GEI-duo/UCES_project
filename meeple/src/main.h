@@ -11,7 +11,7 @@
 
 #define PIN_HALL_SENSOR 2
 #define PIN_FEEDBACK_MAGNETIC_LED 3
-#define PIN_FEEDBACK_BULLET_LED 0
+#define PIN_FEEDBACK_BULLET_LED 1 // IMPORTANT: Use 1 for playing 0 for debugging
 
 #define LOOP_DELAY 0
 #define WIFI_RECONNECT_DELAY_MS 1000

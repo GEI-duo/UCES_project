@@ -9,18 +9,37 @@ void Callbacks::has_bullet(byte *payload, unsigned int length)
 void Callbacks::has_won(byte *payload, unsigned int length)
 {
     this->player().set_has_won(payload[0]);
+    if (this->player().has_won())
+    {
+        this->player().set_can_move(false);
+        this->player().set_has_bullet(false);
+        this->player().set_has_died(false);
+    }
     Serial.printf("Has won: %d\n", this->player().has_won());
 }
 
 void Callbacks::can_move(byte *payload, unsigned int length)
 {
     this->player().set_can_move(payload[0]);
+    if (this->player().can_move())
+    {
+        this->player().set_has_bullet(false);
+        this->player().set_has_died(false);
+        this->player().set_has_won(false);
+    }
     Serial.printf("Can move: %d\n", this->player().can_move());
 }
 
 void Callbacks::has_died(byte *payload, unsigned int length)
 {
     this->player().set_has_died(payload[0]);
+    if (this->player().has_died())
+    {
+        this->player().set_can_move(false);
+        this->player().set_has_bullet(false);
+        this->player().set_has_won(false);
+    }
+
     Serial.printf("Has died: %d\n", this->player().has_died());
 }
 
@@ -47,10 +66,11 @@ void Callbacks::callback(char *topic, uint8_t *payload, unsigned int length)
         case JOINING:
             Serial.println("[DEBUG] New state! JOINING");
             this->m_player.state = JOINING;
+            this->m_player.reset();
             break;
-        case WALKING:
-            Serial.println("[DEBUG] New state! WALKING");
-            this->m_player.state = WALKING;
+        case MOVING:
+            Serial.println("[DEBUG] New state! MOVING");
+            this->m_player.state = MOVING;
             break;
         case SHOOTING:
             Serial.println("[DEBUG] New state! SHOOTING");
@@ -61,7 +81,7 @@ void Callbacks::callback(char *topic, uint8_t *payload, unsigned int length)
             this->m_player.state = ENDING;
             break;
         default:
-            Serial.printf("[ERROR] UNKNOWN NEW STATE %s\n", state);
+            Serial.printf("[ERROR] UNKNOWN NEW STATE %s\n", name);
             break;
         }
         return;

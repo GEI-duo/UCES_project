@@ -2,36 +2,18 @@
 
 #include <PubSubClient.h>
 #include <Arduino.h>
+#include <string>
 
 typedef enum game_state
 {
     JOINING,
-    WALKING,
+    MOVING,
     SHOOTING,
     ENDING,
     UNKNOWN
 } GameState;
 
-GameState gamestate_from_name(char *name)
-{
-    if (strcmp(name, "JOINING") == 0)
-    {
-        return JOINING;
-    }
-    else if (strcmp(name, "WALKING") == 0)
-    {
-        return WALKING;
-    }
-    else if (strcmp(name, "SHOOTING") == 0)
-    {
-        return SHOOTING;
-    }
-    else if (strcmp(name, "ENDING") == 0)
-    {
-        return ENDING;
-    }
-    return UNKNOWN;
-}
+GameState gamestate_from_name(char *name);
 
 class Player
 {
@@ -59,9 +41,29 @@ private:
 public:
     GameState state = JOINING;
 
+    void update_state(char *new_state_name)
+    {
+        GameState new_state = gamestate_from_name(new_state_name);
+
+        if (new_state == UNKNOWN)
+        {
+            Serial.printf("[ERROR] UNKNOWN NEW STATE %s\n", new_state_name);
+        }
+
+        state = new_state;
+    }
+
     Player(const char *username, PubSubClient &mqtt_client)
         : m_username(username), m_mqtt_client(mqtt_client)
     {
+    }
+
+    void reset(void)
+    {
+        m_can_move = false;
+        m_has_bullet = false;
+        m_has_won = false;
+        m_has_died = false;
     }
 
     void publish_ready(void) const
@@ -78,7 +80,7 @@ public:
 
     void publish_died(void) const
     {
-        std::string topic = std::string("players/") + m_username + "/actions/died";
+        std::string topic = std::string("players/") + m_username + "/actions/die";
         publish(topic, "1");
     }
 

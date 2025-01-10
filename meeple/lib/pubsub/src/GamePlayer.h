@@ -69,19 +69,19 @@ public:
     void publish_ready(void) const
     {
         std::string topic = std::string("players/") + m_username + "/actions/ready/meeple";
-        publish(topic, "1");
+        publish(topic, "True");
     }
 
     void publish_moved(void) const
     {
-        std::string topic = std::string("players/") + m_username + "/actions/moved";
-        publish(topic, "1");
+        std::string topic = std::string("players/") + m_username + "/actions/move";
+        publish(topic, "True");
     }
 
     void publish_died(void) const
     {
         std::string topic = std::string("players/") + m_username + "/actions/die";
-        publish(topic, "1");
+        publish(topic, "True");
     }
 
     bool can_move()

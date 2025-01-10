@@ -19,7 +19,7 @@
 const char *SSID = "spinel";
 const char *PASSWORD = "arieteariete";
 
-const char *MQTT_HOST = "192.168.13.101";
+const char *MQTT_HOST = "agrospai.udl.cat";
 // const char *MQTT_HOST = "test.mosquitto.org";
 const int MQTT_PORT = 1883;
 const char *MQTT_USERNAME = "duo_jc";

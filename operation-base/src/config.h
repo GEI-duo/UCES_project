@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include "controllers/BuzzerController.h"
 
 // WiFi credentials
 extern const char* WIFI_SSID;
@@ -26,3 +27,10 @@ extern const int BUTTON_PIN;
 extern const int LED_PIN;
 extern const int BUZZER_PIN;
 extern const uint8_t LCD_ADDRESS;
+
+// Melodies
+extern const Melody gameStartMelody;
+extern const Melody gameWinMelody;
+extern const Melody gameLoseMelody;
+extern const Melody gameTurnMelody;
+extern const Melody gameShootMelody;

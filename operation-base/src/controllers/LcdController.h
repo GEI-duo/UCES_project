@@ -1,4 +1,4 @@
 #pragma once
 
 void setupLcd();
-void setMsg(const char* msg);
+void setRows(const char* firstRow, const char* secondRow = "");

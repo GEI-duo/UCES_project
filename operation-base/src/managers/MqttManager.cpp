@@ -4,24 +4,24 @@
 #include "controllers/LcdController.h"
 #include "controllers/LedController.h"
 #include "events.h"
+#include "globals.h"
 
 extern QueueHandle_t eventQueue;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-void mqtt_init() {
+void mqttInit() {
   client.setServer(MQTT_SERVER, MQTT_PORT);
-  client.setCallback(mqtt_callback);
+  client.setCallback(mqttCallback);
 }
 
-void mqtt_reconnect() {
+void mqttReconnect() {
   while (!client.connected()) {
     Serial.println("Attempting MQTT connection...");
-    if (client.connect("ESP32Client", MQTT_USER, MQTT_PASSWORD)) {
+    if (client.connect("duo_jc_base", MQTT_USER, MQTT_PASSWORD)) {
       Serial.println("Connected to MQTT Broker!");
       client.subscribe(TOPIC_SHOOT);
-      client.subscribe(TOPIC_READY);
       client.subscribe(TOPIC_HAS_BULLET);
       client.subscribe(TOPIC_HAS_WON);
       client.subscribe(TOPIC_CAN_MOVE);
@@ -36,51 +36,79 @@ void mqtt_reconnect() {
   }
 }
 
-void mqtt_callback(char* topic, byte* payload, unsigned int length) {
-  // Print the topic
-  Serial.print("Message arrived on topic: ");
-  if (topic != nullptr) {
-    Serial.println(topic);
+void mqttCallback(char* topic, byte* payload, unsigned int length) {
+  Serial.print("MQTT message received: ");
+
+  if (topic) {
+    Serial.print(topic);
   } else {
-    Serial.println("(null)");
+    Serial.print("(null)");
   }
 
-  // Print the payload
-  Serial.print("Message: ");
+  Serial.print(" = ");
+
   if (payload != nullptr && length > 0) {
     for (unsigned int i = 0; i < length; i++) {
       Serial.print((char)payload[i]);
     }
-    Serial.println();
   } else {
-    Serial.println("(empty)");
+    Serial.print("(empty)");
   }
 
-  // Create a String for the message payload
-  String message = "";
-  for (unsigned int i = 0; i < length; i++) {
-    message += (char)payload[i];
-  }
+  Serial.println();
 
-  // Send the event to the queue
-  Event event;
-  event.type = EVENT_MQTT_MESSAGE;
-
-  // Allocate memory to store the topic string dynamically (to avoid overwriting)
-  char* topicCopy = strdup(topic);
-  if (topicCopy == nullptr) {
-    Serial.println("Error: Memory allocation failed for topic.");
+  // Create and populate the MqttMessage struct
+  MqttMessage* message = (MqttMessage*)malloc(sizeof(MqttMessage));
+  if (message == nullptr) {
+    Serial.println("Error: Memory allocation failed for MqttMessage.");
     return;
   }
 
-  event.data = (void*)topicCopy;  // Store the topic copy in the event
+  // Allocate memory for the topic
+  message->topic = strdup(topic);
+  if (message->topic == nullptr) {
+    Serial.println("Error: Memory allocation failed for topic.");
+    free(message);  // Free the message structure
+    return;
+  }
 
+  // Allocate memory for the message payload
+  message->message = (char*)malloc(length + 1);  // +1 for null-termination
+  if (message->message == nullptr) {
+    Serial.println("Error: Memory allocation failed for message.");
+    free(message->topic);
+    free(message);
+    return;
+  }
+
+  // Copy the payload into the allocated memory
+  memcpy(message->message, payload, length);
+  message->message[length] = '\0';  // Null-terminate the message string
+
+  // Create the event
+  Event event;
+  event.type = EVENT_MQTT_MESSAGE;
+  event.data = (void*)message;
+
+  // Send the event to the queue
   if (xQueueSend(eventQueue, &event, portMAX_DELAY) != pdPASS) {
     Serial.println("Error: Failed to send event to the queue.");
-    free(topicCopy);  // Free the allocated memory if the queue send fails
+    free(message->topic);
+    free(message->message);
+    free(message);
   }
 }
 
-void mqtt_publish(const char* topic, const char* message) {
+void mqttPublish(const char* topic, const char* message) {
   client.publish(topic, message);
+}
+
+void mqttTask(void* pvParameters) {
+  while (1) {
+    if (!client.connected()) {
+      mqttReconnect();
+    }
+    client.loop();
+    vTaskDelay(pdMS_TO_TICKS(1000));
+  }
 }

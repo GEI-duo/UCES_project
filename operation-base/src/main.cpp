@@ -1,17 +1,15 @@
 #include <Arduino.h>
-#include <OneButton.h>
 #include <WiFi.h>
 #include "config.h"
 #include "controllers/ButtonController.h"
+#include "controllers/BuzzerController.h"
 #include "controllers/LcdController.h"
+#include "controllers/LedController.h"
 #include "events.h"
 #include "globals.h"
+#include "managers/GameManager.h"
 #include "managers/MqttManager.h"
 #include "managers/WifiManager.h"
-#include "tasks/button_task.h"
-#include "tasks/game_loop_task.h"
-#include "tasks/mqtt_task.h"
-#include "tasks/wifi_task.h"
 
 void onClickHandler() {
   Event event;
@@ -24,12 +22,18 @@ void onClickHandler() {
 void setup() {
   Serial.begin(115200);
 
-  wifi_init();
-  mqtt_init();
+  wifiInit();
+  mqttInit();
 
   setupButton(onClickHandler);
   setupLcd();
+  setupLed();
+  setupBuzzer();
   eventQueue_init();
+
+  setRows("Meeple Showdown!", "Press to join...");
+  turnOnLed();
+  playMelody(gameStartMelody);
 
   xTaskCreate(wifiTask, "WiFi Task", 10000, NULL, 1, NULL);
   xTaskCreate(mqttTask, "MQTT Task", 10000, NULL, 1, NULL);

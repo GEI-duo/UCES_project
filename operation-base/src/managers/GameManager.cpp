@@ -1,6 +1,9 @@
 #include <Arduino.h>
 #include "config.h"
+#include "controllers/ButtonController.h"
+#include "controllers/BuzzerController.h"
 #include "controllers/LcdController.h"
+#include "controllers/LedController.h"
 #include "events.h"
 #include "globals.h"
 #include "managers/MqttManager.h"
@@ -45,81 +48,84 @@ void handleMqttMessage(char* topic, void* data) {
 
   const char* message = static_cast<const char*>(data);
 
-  Serial.printf(
-      "Game Manager: MQTT message received\n  topic: %s\n  message: %s\n",
-      topic, message);
-
   if (strcmp(topic, TOPIC_HAS_BULLET) == 0) {
     gameState.has_bullet = strcmp((char*)data, "True") == 0;
   } else if (strcmp(topic, TOPIC_HAS_WON) == 0) {
     gameState.has_won = strcmp((char*)data, "True") == 0;
+    setRows("You won!");
+    playMelody(gameWinMelody);
   } else if (strcmp(topic, TOPIC_CAN_MOVE) == 0) {
     gameState.can_move = strcmp((char*)data, "True") == 0;
   } else if (strcmp(topic, TOPIC_HAS_DIED) == 0) {
     gameState.has_died = strcmp((char*)data, "True") == 0;
+    if (gameState.has_died) {
+      setRows("Game over!");
+      playMelody(gameLoseMelody);
+    }
   } else if (strcmp(topic, TOPIC_READY) == 0) {
     gameState.ready = strcmp((char*)data, "True") == 0;
   } else if (strcmp(topic, TOPIC_STAGE) == 0) {
     if (strcmp((char*)data, "joining") == 0) {
       gameState.stage = GameState::Stage::Joining;
-    } else if (strcmp((char*)data, "moving") == 0) {
-      gameState.stage = GameState::Stage::Moving;
-    } else if (strcmp((char*)data, "shooting") == 0) {
-      gameState.stage = GameState::Stage::Shooting;
-    } else if (strcmp((char*)data, "end") == 0) {
-      gameState.stage = GameState::Stage::End;
+      setRows("Meeple Showdown!", "Press to join...");
     }
+  } else if (strcmp((char*)data, "moving") == 0) {
+    gameState.stage = GameState::Stage::Moving;
+    setRows("Players are", "moving...");
+    stopBlinkTask();
+  } else if (strcmp((char*)data, "shooting") == 0) {
+    gameState.stage = GameState::Stage::Shooting;
+    if (gameState.has_bullet) {
+      setRows("Press to shoot!");
+      startBlinkTask();
+    } else {
+      setRows("Waiting for", "shooting...");
+    }
+  } else if (strcmp((char*)data, "end") == 0) {
+    gameState.stage = GameState::Stage::End;
+    stopBlinkTask();
   }
 }
 
 void handleButtonPress() {
+  Serial.println("Button pressed");
+
   if (gameState.stage == GameState::Stage::Joining) {
-    mqtt_publish(TOPIC_READY, "True");
+    gameState.ready = true;
+    setRows("Waiting for", "other players...");
+    mqttPublish(TOPIC_READY, "True");
   } else if (gameState.stage == GameState::Stage::Shooting) {
-    mqtt_publish(TOPIC_SHOOT, "True");
+    mqttPublish(TOPIC_SHOOT, "True");
   }
 }
 
 void gameLoop() {
   Event event;
 
-  // LCD messages
-  // "Press to join"
-  // "Waiting for other players"
-  // "Players are moving"
-  // "Press to shoot"
-  // "Wait for shooting"
-  // "Victory"
-  // "Game over"
-
-  if (gameState.stage == GameState::Stage::Joining) {
-    if (gameState.ready) {}
-  } else if (gameState.stage == GameState::Stage::Moving) {
-    if (gameState.can_move) {
-      // Move player
-    }
-  } else if (gameState.stage == GameState::Stage::Shooting) {
-    if (gameState.has_bullet) {
-      // Shoot
-    }
-  } else if (gameState.stage == GameState::Stage::End) {
-    if (gameState.has_won) {
-      // Victory
-    } else {
-      // Game over
-    }
-  }
-
   if (xQueueReceive(eventQueue, &event, portMAX_DELAY) == pdTRUE) {
     switch (event.type) {
-      case EVENT_MQTT_MESSAGE:
-        handleMqttMessage(((MqttMessage*)event.data)->topic,
-                          ((MqttMessage*)event.data)->message);
+      case EVENT_MQTT_MESSAGE: {
+        MqttMessage* mqttMessage = (MqttMessage*)event.data;
+
+        if (mqttMessage) {
+          handleMqttMessage(mqttMessage->topic, mqttMessage->message);
+
+          // Free dynamically allocated memory
+          // free(mqttMessage->topic);
+          // free(mqttMessage->message);
+          // free(mqttMessage);
+        }
         break;
+      }
       case EVENT_BUTTON_PRESS:
-        Serial.println("Button pressed");
         handleButtonPress();
         break;
     }
+  }
+}
+
+void gameLoopTask(void* pvParameters) {
+  while (true) {
+    gameLoop();
   }
 }
